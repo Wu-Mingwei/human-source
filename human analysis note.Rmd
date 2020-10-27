@@ -1,39 +1,96 @@
+---
+title: "Human Sources analysis"
+author: "Mingwei (Show) Wu"
+---
+## Background 
+### "Turnover" : turnover is that churn refers to the gradual loss of employees over a period of time. In a company, the employee turnover is the biggest issue facing HR and high costs Therefore, analysis the employee turnover is the way to prevent the damange and save mony to company. Usually, the comon reasons employee turnover is better opportunity, healh, rolocation, eaducation, and personal reasons etc.In addition, some hidden reasons of employees turnover includes percent salary hike, overtime, travel distance, career satisfaction, tenure, and supervisor's personality etc.
 
-## predicting the employee turnover data experiment
-```{r}
+## Data
+### emp_id: employees id
+### status: working status, Active and Inactive
+### location: location of working city
+### level: Job level in Company
+### gender: Male and Female
+### emp_age: employees age
+### rating: Internal work evaluation level
+### mar_rating: employees' manager internal work evaluation level
+### mgr_reportees: employees' manager report
+### mgr_age: employees' manager age
+### mgr_tenure: employees' manager tenure
+### compensation: salary
+### percent_hike: precentage of increase salary
+### hiring_score: hire interview score
+### hiring_sourece: platform for job
+### no_previous_companies_worked: number of previous work rompaneies
+### distance_from_homne: distance between home and work place
+### total_dependets: number of dependets
+### marital_status: status of marry
+### education: education level
+### promotion_last_2_years: the promotion of employee within last 2 years
+### no_leaves_taken: number of leaves have been taken
+### total_experience: total of work experience
+### monthly_overtime_hrs: total number of monthly overtime hours
+### date_of_joining: date of join the companey
+### last_working_date: last working date before leaf
+### department: company department
+### mgr_id: manager id
+### cutoff_date: data cut-off date in database
+### turnover: 0 is stay, 1 is leaf
+### mgr_effectiveness: manager effectiveness
+### career_satisfaction: percentage of career satisfaction
+### perf_satisfaction: percentage of performance satisfaction
+### work_satisfaction: percentage of performance satisfaction
+
+##Purpose
+### Analysis employees turnover is the way to prevent the damage, save cost, increase efficiency, and building up company culture. It is huge part of challenge to HR. Our goal is to provide the insights and actionable tips to prevent the employees turnover. Focus on what reason for our employees leaving and how to raise their satification, operation as well as increase the ROI. Reducing risk cost and increase profit in hidden part.
+##Method
+## Question 1: How many employees status were change on the cut-off data (12/31/2014). Which is highest risk level for employee turnover? Track the key metrics to provide the overview.
+### For the question, use the MySQL to select the dataset or use R to import the data for manipulation. Counting the status then use R to filter the highest proportion level to track. Also, check the significant factors for reason of turnover.
+
+## Data Importing
+###Importing the original data of organization, deal with 1954 observations and 34 column.
+```{r echo=FALSE}
 library(readr)
 library(dplyr)
 library(tidyverse)
-org<-read.csv("org.csv")
-glimpse(org)
-```
-```{r}
+org<-read.csv("org_final.csv")
 dim(org)
 ```
-
-## Turnover rate = Number of employees who left / Total number of employees
-
-```{r}
+```{r echo=FALSE}
+dim(org)
+```
+# Fomular for turnover rate
+##Turnover rate = Number of employees who left / Total number of employees
+### counting the status from data frame. we know the active employee is 1557, and 397 employees left the company.
+```{r echo=FALSE}
 org%>%
   count(status) # see how many employees still be active
 ```
-```{r}
+### calculate a mean of turnover_rate. the rate is approximation 18% for employees left
+```{r echo=FALSE}
 org%>%
-  summarise(turnover_rate=mean(turnover)) # Since 1 is inactive employee, so the rate is approxmation 18% employees who left.
+  summarise(turnover_rate=mean(turnover)) # Since 1 is inactive employee, so the rate is approximation 18% employees who left.
 ```
 
-```{r}
+### Approximation 22% of Analyst job level leaving and 15% of Specialist level leaving end of 12/31/2014 in the company.
+```{r echo=FALSE}
 level<- org%>% #checking the rate of turnover between different level
   group_by(level)%>%
-  summarise(turnover_rate=mean(turnover)) ; level
-```
-```{r}
-library(ggplot2) #plot the histogram to see the turnover_rate of level
-library(broom)
-level%>%
-  ggplot(aes(level, turnover_rate))+geom_col()
+  summarise(turnover_rate=mean(turnover))  
+level
 ```
 
+### use graph for data visulization. the graph is showing the rate value between the analyst level and spcialist level.
+```{r echo=FALSE}
+library(ggplot2) #plot the histogram to see the turnover_rate of level
+library(scales)
+library(broom)
+level%>%
+  ggplot(aes(level, turnover_rate))+geom_col()+scale_y_continuous(limits = c(0,0.5),
+                                                                  labels = percent)
+```
+## Question: calculate the turnover rate in different cites
+### Company has 3 controlled company in Chicago, New York, Orlando. After calculating the trunover_rate, we can see the highest proportion is in New York city, and the lowest is Orlando.
 ```{r}
 location<- org%>%  # checking the turnover_rate of location
   group_by(location)%>%
@@ -44,58 +101,29 @@ location%>%  #histogram to data visulization
   ggplot(aes(location,turnover_rate))+ geom_col()
 ```
 
-```{r}
-org1<-org%>% # first subset the job level in Analyst and Specialist
-  filter(level %in% c("Analyst","Specialist"))
-dim(org1)
-```
-```{r}
-org%>%
-  count(level)  # total number for each level
-org1%>%
-  count(level) #total number between Analyst and Specialist
-```
-
-```{r}
-rating<-read.csv("rating.csv")
-dim(rating)
-```
-
-```{r}
-org2 <- left_join(org1,rating, by = "emp_id") # combine two table to see if the rate is effect for turnover
-dim(org2)
-```
-```{r}
-org2%>%   # calculate the turnover_rate in rating
+## chekcing rating relationship for turnover_rate
+### from the data calculating, the internal work evulation rate are showing that the unacceptable is 63% highest proportion of turnover_rate. The number 2 higher proportion is below average rating. On the contraction, the acceptable is 22%, above average 13% and excellent only 3%
+```{r echo=FALSE}
+org%>%   # calculate the turnover_rate in rating
   group_by(rating)%>%
   summarise(turnover_rate=mean(turnover))
 ```
-```{r}
-survey<-read.csv("survey.csv")
-glimpse(survey)
-```
-
-```{r}
-org3 <- left_join(org2, survey, by = "mgr_id") # combine the table between the org2 and survey
-org3%>%
+##Question: is the work evulation as main factor for employee turnover? the employee was fire by company? 
+###the grph showing manager effectiveness also affct the employee turnover. the box-plot shows the outliers of inactive. however, overall shows that the mean of manger effectiveness of active is higher than inactive. according to box-plot, we know the manger effectiveness also affect turnover of employees.
+```{r echo=FALSE}
+org%>%
   ggplot(aes(status,mgr_effectiveness))+geom_boxplot() #graph to show if the effectiveness relationship with status
 ```
-
-```{r}
-org_final<-read.csv("org_final.csv")
-dim(org_final)
-```
-```{r}
-org_final%>%
+### checking the distance between work place and home either effect to turnover or not.
+```{r echo=FALSE}
+org%>%
   ggplot(aes(status, distance_from_home))+geom_boxplot() # graph for the relationship between distance from home with status
 ```
-
-
 
 # Job-hop Index = Total experience / Number of companies
 
 ```{r}
-emp_age_diff<-org_final%>%
+emp_age_diff<-org%>%
   mutate(age_diff= mgr_age-emp_age)
 emp_age_diff%>%
   ggplot(aes(status,age_diff))+geom_boxplot()
