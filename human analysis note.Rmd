@@ -1,6 +1,7 @@
 ---
 title: "Human Sources analysis"
 author: "Mingwei (Show) Wu"
+output: pdf_document
 ---
 ## Background 
 ### "Turnover" : turnover is that churn refers to the gradual loss of employees over a period of time. In a company, the employee turnover is the biggest issue facing HR and high costs Therefore, analysis the employee turnover is the way to prevent the damange and save mony to company. Usually, the comon reasons employee turnover is better opportunity, healh, rolocation, eaducation, and personal reasons etc.In addition, some hidden reasons of employees turnover includes percent salary hike, overtime, travel distance, career satisfaction, tenure, and supervisor's personality etc.
@@ -91,7 +92,7 @@ level%>%
 ```
 ## Question: calculate the turnover rate in different cites
 ### Company has 3 controlled company in Chicago, New York, Orlando. After calculating the trunover_rate, we can see the highest proportion is in New York city, and the lowest is Orlando.
-```{r}
+```{r echo=FALSE}
 location<- org%>%  # checking the turnover_rate of location
   group_by(location)%>%
   summarise(turnover_rate=mean(turnover)) ;  location
