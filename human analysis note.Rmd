@@ -226,74 +226,53 @@ logistic_mgr1<-glm(turnover~emp_age+percent_hike+distance_from_home+total_depend
                    data=org)
 summary(logistic_mgr1)
 ```
-
-
-
-
-
-
-### split the data 70% into train and 30% into test 
-```{r}
+## 79% Training data and 30% Test data
+### split the data 70% into train and 30% into test. we got 1367 observations in training data
+```{r echo=FALSE}
 library(ISLR)
-smp_siz <- floor(0.7 * nrow(emp_final) )
+smp_siz <- floor(0.7 * nrow(org) )
 smp_siz
 ```
-```{r}
+### we do ramdonly select train data and test data into sample
+```{r echo=FALSE}
 set.seed(1234)
-train_ind<-sample(seq_len(nrow(emp_final)), size = smp_siz)
-train <- emp_final [train_ind,]
-test<- emp_final [-train_ind,]
+train_ind<-sample(seq_len(nrow(org)), size = smp_siz)
+train <- org [train_ind,]
+test<- org [-train_ind,]
 ```
 
-```{r}
+### After we calculating the propoertion in train date in status, we can see in proportion that we lost approximation 20.6% to our employee.
+```{r echo=FALSE}
 train%>%
   count(status)%>%
   mutate(prop=n/sum(n)) #calculate the proportion in train for level and status
 ```
-```{r}
+
+```{r echo=FALSE}
 test%>%
   count(status)%>%
-  mutate(prop=n/sum(n)) # calculate the proportion in test for level and status
+  mutate(prop=n/sum(n)) # calculate the proportion in test for status
 ```
-```{r}
-log<- glm(turnover ~ percent_hike,
-          family= "binomial",
-          data=train) # build a logistic regression using percent_hike to predict turnover
-summary(log)
-```
-```{r}
-mul_log<- glm(turnover~ level+gender+mgr_rating+compensation+hiring_score+marital_status+distance_from_home+monthly_overtime_hrs+work_satisfaction,
-              family="binomial",
-              data=train) #bulid a multiple regression model for couple independent variables to predict turnover
-summary(mul_log)
-```
-
-```{r}
-mul_log1<- glm(turnover~ level+compensation+distance_from_home+monthly_overtime_hrs+work_satisfaction,
-               family="binomial",
-               data=train)
-summary(mul_log1)
-```
-#Variance Inflation Factor
+##Variance Inflation Factor
 ```{r}
 library(car)
 vif(mul_log1) #check a multicollinearity, the vif for each variables is greater than 1 but less than 2. they are showing the indepent variables moderately correlated
 ```
-
-```{r}
-prediction_train<- predict(mul_log1, newdata= train,
+### below attachment is prediction range of train data.
+```{r echo=FALSE}
+prediction_train<- predict(logistic_mgr1, newdata= train,
                            type = "response")
 hist(prediction_train) # distribution skewed left, and histogram shown the probability to the employees who will left organization
 ```
-
-```{r}
-prediction_test<-predict(mul_log1 , newdata = test,
+### Result in training data as same as test data
+```{r echo=FALSE}
+prediction_test<-predict( logistic_mgr1, newdata = test,
                          type = "response")
 hist(prediction_test) # check a train data into test data
 ```
-
-# Turn probabilities in categories by using a cut-off
-```{r}
+## Calculate accuracy and precision.
+### Turn probabilities in categories by using a cut-off
+```{r echo=FALSE}
 pre_cut <- ifelse(prediction_test >0.5 , 1 ,0) #classify predictions using a cut-off of 0.5
 conf_matrix<- table(pre_cut , test$turnover)
 conf_matrix # 1 means inactive while 0 is active
@@ -309,29 +288,30 @@ p <- rowsums / n # distribution of instances over the actual classes
 q <- colsums / n # distribution of instances over the predicted classes
 ```
 
-```{r}
+```{r echo=FALSE}
 accuracy <- sum(diag) / n ; accuracy # the model's accuracy is 0.88
 precision <- diag/colsums;precision # the model's precision to active is 0.97 and inactive 0.53
 ```
-
-#create retension strategy
-
-```{r}
+##Question: After we analysis the result at above, what is next step?
+### when we know the accuracy and precision to our analysis, we have to provide the feeback and improve our strategy.
+##create retension strategy
+```{r echo=FALSE}
 library(tidypredict)
 emp_risk<- emp_final %>%
   filter (status == "Active")%>%
-  tidypredict_to_column(mul_log1) # calculate probability of turnover and add predictions using the mul_log model
+  tidypredict_to_column(logistic_mgr1) # calculate probability of turnover and add predictions using the mul_log model
 ```
 
-```{r}
+###analysis the probability of employee turnover.
+```{r echo=FALSE}
 emp_risk %>%
   select(emp_id , fit)%>%
   group_by(level)%>%
   top_n(5, wt = fit)%>%
   arrange(desc(fit))  # look at the employee's probability of turnover from high to low 
 ```
-
-```{r}
+### Improve data frame.
+```{r echo=FALSE}
 emp_risk_bucket <- emp_risk%>%
   mutate(risk_bucket =cut(fit, breaks =c(0,0.3,0.5,0.7,1),
                             labels = c("no-risk", "low-risk", "medium-risk", "high-risk")))
@@ -339,14 +319,14 @@ emp_risk_bucket%>%
   count(risk_bucket)%>% #calculate the risk of turnover to the active employee
   group_by(risk_bucket)
 ```
-
-#ROI: retun on investment
-##ROI = Program Benifits / Program Cost
-```{r}
+## Provide a plan to improve employee turnover.
+##ROI: retun on investment
+###ROI = Program Benifits / Program Cost
+```{r echo=FALSE}
 emp_final%>%
   ggplot(aes(percent_hike))+geom_histogram(binwidth = 3) #plot histogram of percent hike
 ```
-```{r}
+```{r echo=FALSE}
 emp_hike_range<- emp_final%>%
   filter(level == "Analyst")%>%
   mutate(hike_rage = cut(percent_hike, breaks = c(0,10,15,20),
@@ -356,30 +336,30 @@ df_hike<-emp_hike_range%>%
   group_by(hike_rage)%>%
   summarise(turnover_rate_hike = mean(turnover)) # calculate the turnover rate for each salary hike rage
 ```
-```{r}
+```{r echo=FALSE}
 df_hike%>%
   ggplot(aes(hike_rage, turnover_rate_hike))+geom_col()
 ```
-
-```{r}
+```{r echo=FALSE}
 emp_final%>%
   filter(level == "Analyst")%>%
   count(median_compensation) # after filter we know median_compensation of analyst is 51840
 ```
-```{r}
+```{r echo=FALSE}
 emp_final%>%
   filter(level=="Analyst")%>%
   select(compensation)%>%
   arrange(compensation)%>%
   head()#calculate the minium salary to analyst
 ```
-
-```{r}
-extra_cost<- 51840 * 0.05 ; extra_cost #increase the salary 5%
-savings <- 40000*0.17 ; savings #assuming the analyst left then hire other one and traning cost
+##Provide a assuming to incrase 5% salary to all employee to prevent the employee turnover. otherwise, we use the lowest salary to hire a new employee, and devoe timing consume to training as cost 40000.
+```{r echo=FALSE}
+extra_cost<- 51840 * 1.05 ; extra_cost #increase the salary 5%
+savings <- 40000 ; savings #assuming the analyst left then hire other one and traning cost
 ```
-
-```{r}
+## ROI plan
+### The strategy still make returns exceed 73% costs.
+```{r echo=FALSE}
 ROI<-(savings / extra_cost)*100
 cat(paste0("The return on investment is ", round(ROI), "%!"))
 ```
