@@ -120,30 +120,33 @@ org%>%
 org%>%
   ggplot(aes(status, distance_from_home))+geom_boxplot() # graph for the relationship between distance from home with status
 ```
+## Due to figure out more significant factors which are affecting the employee turnover.
+### Question: How does our company provide the hope to our employee? is data showing the relationship between the age and experience?
+### We want to calculate some Job-Hop to our company. Differece of age between the employees and their supervisor, also improve the data to display the age and experiences. Provide a Job-Hop into data frame for reducing employee turnover.
+### extra a data for difference of employe age and manager age. Why calculate that? It's a reason that age difference will provide the hope for the Junior employee. They can know how long or what experience would supoort them move on next level.
 
-# Job-hop Index = Total experience / Number of companies
-
-```{r}
+###Box-plot below, shows some outliers for status. it notice us, the mean of age difference of Inactive higher than actvie.This leads to the next idea of whether there is a big gap in age or experience between employees leaving and job expectations. Should we improve the system or shrink the age stage of the working layer. 
+```{r echo=FALSE}
 emp_age_diff<-org%>%
   mutate(age_diff= mgr_age-emp_age)
 emp_age_diff%>%
   ggplot(aes(status,age_diff))+geom_boxplot()
 ```
-```{r}
-glimpse(emp_age_diff)
-```
-
-```{r}
+###When Box-plot shows huge outliers, even the experience and number of previous worked experience might affect the Job-Hop, they were not consider in our concern.
+```{r echo=FALSE}
 emp_JHI<-emp_age_diff%>%
   mutate(jhi=total_experience / no_previous_companies_worked) #calcultate the Job hop for each emplyees from age different
 emp_JHI%>%
   ggplot(aes(status,jhi))+geom_boxplot() # box-plot to demonstrate the outliers and mean
 ```
 
-```{r}
+```{r echo=FALSE}
 library(lubridate) #load package for manipulation the time
 ```
-```{r}
+
+##Question: Any suggestion to improve a employee turnover?
+###Calulate the empolyee tenure. According to below box-plot, we can see the Q1 percentile of active is almost equal the Q3 percentile of Inactive employee. In inactive employee, only 50% work like a year in the company. However, active empolyees are working for a long time than inactive employee. As a result. we can assume that the inactive employee domain percentage is new employee. According that, we have to improve the Junior employees in their first year. 
+```{r echo=FALSE}
 emp_tenure<- emp_JHI%>%
   mutate(tenure = ifelse(status=="Active",
          time_length(interval(date_of_joining, cutoff_date), "years"),
@@ -151,18 +154,19 @@ emp_tenure<- emp_JHI%>%
 emp_tenure%>%
   ggplot(aes(status,tenure))+geom_boxplot() #box plot displaying
 ```
-
-```{r}
+### The inactive employees' salary are lower than active employees.
+```{r echo=FALSE}
 emp_tenure%>%
-  ggplot(aes(compensation))+geom_histogram() #plot the distribution for compensation
+  ggplot(aes(compensation,fill= status))+geom_histogram() #plot the distribution for compensation
 ```
-```{r}
+### Graph shows the relationship between level, compensation and status. In Analyst level, active employees compensation higher than inactive. However, in Specialist level, the inactive employess higher than active employees.
+```{r echo=FALSE}
 emp_tenure%>%
   ggplot(aes(level, compensation, fill=status))+geom_boxplot() # graph to compare the compensation within status 
 ```
 # Compa Ratio is estimation to evaluate the employee wage percentage to median pay.
 ##Compa Ratio = Actual Compensation / Median Compensation 
-```{r}
+```{r echo=FALSE}
 emp_ratio<- emp_tenure%>%
   group_by(level)%>%
   mutate(median_compensation = median(compensation),
@@ -180,12 +184,55 @@ emp_final%>%
 # Unstanding information value : measure of predictive power of independent variable to accurately predict the dependent variable
 ## Information value = sima(% of non-events-% of events))* log( % of non-events/% of events)
 ##information value : less than 0.15 meaning predictive power is poor, if 0.15 < IV < 0.4 id moderate, else greater than 0.4 meaning strong.
-```{r}
+```{r echo=FALSE}
 library(Information)
 IV <- create_infotables(data = emp_final, y = "turnover") 
 IV$Summary  #after we calculate the information value, we can see which variables are significant stronger for predictive power
 ```
-# split the data 70% into train and 30% into test 
+
+## logistic regression
+### As a summary showing the overall for the multiple linear regression, we can see the p-value to design which is significant factors. Compensation, career_satisfaction, rating, work_satification and promotion_last_2_years are not significant to this regression.
+```{r echo=FALSE}
+logistic<-glm(turnover~emp_age+percent_hike+hiring_score+compensation+distance_from_home+total_dependents+total_experience+monthly_overtime_hrs+career_satisfaction+perf_satisfaction+work_satisfaction+location+rating+marital_status+education+promotion_last_2_years,
+         family= "binomial",
+         data=org) # build multiple predict variables for linear regression
+summary(logistic)
+```
+```{r echo=FALSE}
+logistic1<-glm(turnover~emp_age+percent_hike+hiring_score+distance_from_home+total_dependents+total_experience+monthly_overtime_hrs+perf_satisfaction+work_satisfaction+location+marital_status+education,
+              family= "binomial",
+              data=org)
+summary(logistic1)
+```
+## In the catogrical variables, 1 is yes, and 0 is baseline. For example, Marital_status summary only show Single, the married as baseline. we could state that when employee is single, it is associate 1.63 increase turnover with employee is single.
+### turnover= -2.21x-0.288emp_age-0.329percent_hike+0.049hiring_sore+0.199distance_from_homw+0.736total_dependents+0.101total_experience+0.162monthly_overtime_hrs-2.379per_satisfaction-0.342work_satisfaction+1.41New york or -0.858 Orlando+1.63Sigale+1.787 Masters.
+```{r echo=FALSE}
+logistic1$coefficients
+```
+
+
+
+## after we assume a realtionship to employees' self, we can add the manager information in the model.
+```{r echo=FALSE}
+logistic_mgr<-glm(turnover~emp_age+percent_hike+hiring_score+distance_from_home+total_dependents+total_experience+monthly_overtime_hrs+perf_satisfaction+work_satisfaction+location+marital_status+education+mgr_rating+mgr_reportees+mgr_age+mgr_tenure,
+               family = "binomial",
+               data=org)
+summary(logistic_mgr)
+```
+
+```{r echo=FALSE}
+logistic_mgr1<-glm(turnover~emp_age+percent_hike+distance_from_home+total_dependents+monthly_overtime_hrs+perf_satisfaction+location+marital_status+education+mgr_reportees,
+                   family = "binomial",
+                   data=org)
+summary(logistic_mgr1)
+```
+
+
+
+
+
+
+### split the data 70% into train and 30% into test 
 ```{r}
 library(ISLR)
 smp_siz <- floor(0.7 * nrow(emp_final) )
