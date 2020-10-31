@@ -143,13 +143,10 @@ emp_JHI%>%
   ggplot(aes(status,jhi))+geom_boxplot() # box-plot to demonstrate the outliers and mean
 ```
 
-```{r echo=FALSE}
-library(lubridate) #load package for manipulation the time
-```
-
 ##Question: Any suggestion to improve a employee turnover?
 ###Calulate the empolyee tenure. According to below box-plot, we can see the Q1 percentile of active is almost equal the Q3 percentile of Inactive employee. In inactive employee, only 50% work like a year in the company. However, active empolyees are working for a long time than inactive employee. As a result. we can assume that the inactive employee domain percentage is new employee. According that, we have to improve the Junior employees in their first year. 
 ```{r echo=FALSE}
+library(lubridate) 
 emp_tenure<- emp_JHI%>%
   mutate(tenure = ifelse(status=="Active",
          time_length(interval(date_of_joining, cutoff_date), "years"),
