@@ -291,6 +291,8 @@ q <- colsums / n # distribution of instances over the predicted classes
 ```{r echo=FALSE}
 accuracy <- sum(diag) / n ; accuracy # the model's accuracy is 92%
 precision <- diag/colsums;precision # the model's precision to active 96% and inactive 0.76%
+accuracy <- sum(diag) / n ; accuracy # the model's accuracy is 0.88
+precision <- diag/colsums;precision # the model's precision to active is 0.97 and inactive 0.53
 ```
 ##Question: After we analysis the result at above, what is next step?
 ### when we know the accuracy and precision to our analysis, we have to provide the feeback and improve our strategy.
@@ -353,7 +355,7 @@ emp_final%>%
   arrange(compensation)%>%
   head()#calculate the minium salary to analyst
 ```
-### At the above anaylsis, we identified that the turnover rate of employees in 0 to 10 percent salary hike range is higher compared 11 to 15 and 16 to 20 percent salary hike range. Assumming all employees who received a salary hike between 0 and 10% were instead offered a hike, there is a very good chance we would have been retain most of the employees
+### At the above anaylsis, we identified that the turnover rate of employees in 0 to 10 percent salary hike range is higher compared 11 to 15 and 16 to 20 percent salary hike range. Assumming all employees who received a salary hike between 0 and 10% were instead offered a hike, there is a very good chance we would have been retain most of the employees. Provide a strategy to increase 5% to all employees' salay.
 ```{r echo=FALSE}
 extra_cost<- 51840 * 1.05 ; extra_cost #increase the salary 5%
 savings <- 40000 ; savings #assuming the analyst left then hire other one and traning cost
