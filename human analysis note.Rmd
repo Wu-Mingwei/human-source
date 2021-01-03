@@ -90,8 +90,7 @@ level%>%
   ggplot(aes(level, turnover_rate))+geom_col()+scale_y_continuous(limits = c(0,0.5),
                                                                   labels = percent)
 ```
-## Question: calculate the turnover rate in different cites
-### Company has 3 controlled company in Chicago, New York, Orlando. After calculating the trunover_rate, we can see the highest proportion is in New York city, and the lowest is Orlando.
+
 ```{r echo=FALSE}
 location<- org%>%  # checking the turnover_rate of location
   group_by(location)%>%
@@ -123,18 +122,12 @@ org%>%
 org%>%
   ggplot(aes(status, distance_from_home))+geom_boxplot() # graph for the relationship between distance from home with status
 ```
-## Due to figure out more significant factors which are affecting the employee turnover.
-### Question: How does our company provide the hope to our employee? is data showing the relationship between the age and experience?
-### We want to calculate some Job-Hop to our company. Differece of age between the employees and their supervisor, also improve the data to display the age and experiences. Provide a Job-Hop into data frame for reducing employee turnover.
-### extra a data for difference of employe age and manager age. Why calculate that? It's a reason that age difference will provide the hope for the Junior employee. They can know how long or what experience would supoort them move on next level.
-### Box-plot below, shows some outliers for status. it notice us, the mean of age difference of Inactive higher than actvie.This leads to the next idea of whether there is a big gap in age or experience between employees leaving and job expectations. Should we improve the system or shrink the age stage of the working layer. 
 ```{r echo=FALSE}
 emp_age_diff<-org%>%
   mutate(age_diff= mgr_age-emp_age)
 emp_age_diff%>%
   ggplot(aes(status,age_diff))+geom_boxplot()
 ```
-### When Box-plot shows huge outliers, even the experience and number of previous worked experience might affect the Job-Hop, they were not consider in our concern.
 ```{r echo=FALSE}
 emp_JHI<-emp_age_diff%>%
   mutate(jhi=total_experience / no_previous_companies_worked) #calcultate the Job hop for each emplyees from age different
@@ -153,18 +146,15 @@ emp_tenure<- emp_JHI%>%
 emp_tenure%>%
   ggplot(aes(status,tenure))+geom_boxplot() #box plot displaying
 ```
-### The inactive employees' salary are lower than active employees.
+
 ```{r echo=FALSE}
 emp_tenure%>%
-  ggplot(aes(compensation,fill= status))+geom_histogram() #plot the distribution for compensation
+  ggplot(aes(compensation,fill= status))+geom_histogram() #plot the distribution for compensation. the inactive employees' salary are lower than active employees'
 ```
-### Graph shows the relationship between level, compensation and status. In Analyst level, active employees compensation higher than inactive. However, in Specialist level, the inactive employess higher than active employees.
 ```{r echo=FALSE}
 emp_tenure%>%
-  ggplot(aes(level, compensation, fill=status))+geom_boxplot() # graph to compare the compensation within status 
+  ggplot(aes(level, compensation, fill=status))+geom_boxplot() # graph to compare the compensation within status of analysist and specialist
 ```
-# Compa Ratio is estimation to evaluate the employee wage percentage to median pay.
-## Compa Ratio = Actual Compensation / Median Compensation 
 ```{r echo=FALSE}
 emp_ratio<- emp_tenure%>%
   group_by(level)%>%
@@ -263,14 +253,11 @@ prediction_train<- predict(logistic_mgr1, newdata= train,
                            type = "response")
 hist(prediction_train) # distribution skewed left, and histogram shown the probability to the employees who will left organization
 ```
-### Result in training data as same as test data
 ```{r echo=FALSE}
 prediction_test<-predict( logistic_mgr1, newdata = test,
                          type = "response")
 hist(prediction_test) # check a train data into test data
 ```
-## Calculate accuracy and precision.
-### Turn probabilities in categories by using a cut-off
 ```{r echo=FALSE}
 pre_cut <- ifelse(prediction_test >0.5 , 1 ,0) #classify predictions using a cut-off of 0.5
 conf_matrix<- table(pre_cut , test$turnover)
