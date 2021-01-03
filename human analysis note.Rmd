@@ -42,14 +42,14 @@ output: pdf_document
 ### perf_satisfaction: percentage of performance satisfaction
 ### work_satisfaction: percentage of performance satisfaction
 
-##Purpose
+## Purpose
 ### Analysis employees turnover is the way to prevent the damage, save cost, increase efficiency, and building up company culture. It is huge part of challenge to HR. Our goal is to provide the insights and actionable tips to prevent the employees turnover. Focus on what reason for our employees leaving and how to raise their satification, operation as well as increase the ROI. Reducing risk cost and increase profit in hidden part.
 ##Method
 ## Question 1: How many employees status were change on the cut-off data (12/31/2014). Which is highest risk level for employee turnover? Track the key metrics to provide the overview.
 ### For the question, use the MySQL to select the dataset or use R to import the data for manipulation. Counting the status then use R to filter the highest proportion level to track. Also, check the significant factors for reason of turnover.
 
 ## Data Importing
-###Importing the original data of organization, deal with 1954 observations and 34 column.
+### Importing the original data of organization, deal with 1954 observations and 34 column.
 ```{r echo=FALSE}
 library(readr)
 library(dplyr)
@@ -61,7 +61,7 @@ dim(org)
 dim(org)
 ```
 # Fomular for turnover rate
-##Turnover rate = Number of employees who left / Total number of employees
+## Turnover rate = Number of employees who left / Total number of employees
 ### counting the status from data frame. we know the active employee is 1557, and 397 employees left the company.
 ```{r echo=FALSE}
 org%>%
@@ -109,8 +109,8 @@ org%>%   # calculate the turnover_rate in rating
   group_by(rating)%>%
   summarise(turnover_rate=mean(turnover))
 ```
-##Question: is the work evulation as main factor for employee turnover? the employee was fire by company? 
-###the grph showing manager effectiveness also affct the employee turnover. the box-plot shows the outliers of inactive. however, overall shows that the mean of manger effectiveness of active is higher than inactive. according to box-plot, we know the manger effectiveness also affect turnover of employees.
+## Question: is the work evulation as main factor for employee turnover? the employee was fire by company? 
+### the grph showing manager effectiveness also affct the employee turnover. the box-plot shows the outliers of inactive. however, overall shows that the mean of manger effectiveness of active is higher than inactive. according to box-plot, we know the manger effectiveness also affect turnover of employees.
 ```{r echo=FALSE}
 org%>%
   ggplot(aes(status,mgr_effectiveness))+geom_boxplot() #graph to show if the effectiveness relationship with status
@@ -127,15 +127,14 @@ org%>%
 ### Question: How does our company provide the hope to our employee? is data showing the relationship between the age and experience?
 ### We want to calculate some Job-Hop to our company. Differece of age between the employees and their supervisor, also improve the data to display the age and experiences. Provide a Job-Hop into data frame for reducing employee turnover.
 ### extra a data for difference of employe age and manager age. Why calculate that? It's a reason that age difference will provide the hope for the Junior employee. They can know how long or what experience would supoort them move on next level.
-
-###Box-plot below, shows some outliers for status. it notice us, the mean of age difference of Inactive higher than actvie.This leads to the next idea of whether there is a big gap in age or experience between employees leaving and job expectations. Should we improve the system or shrink the age stage of the working layer. 
+### Box-plot below, shows some outliers for status. it notice us, the mean of age difference of Inactive higher than actvie.This leads to the next idea of whether there is a big gap in age or experience between employees leaving and job expectations. Should we improve the system or shrink the age stage of the working layer. 
 ```{r echo=FALSE}
 emp_age_diff<-org%>%
   mutate(age_diff= mgr_age-emp_age)
 emp_age_diff%>%
   ggplot(aes(status,age_diff))+geom_boxplot()
 ```
-###When Box-plot shows huge outliers, even the experience and number of previous worked experience might affect the Job-Hop, they were not consider in our concern.
+### When Box-plot shows huge outliers, even the experience and number of previous worked experience might affect the Job-Hop, they were not consider in our concern.
 ```{r echo=FALSE}
 emp_JHI<-emp_age_diff%>%
   mutate(jhi=total_experience / no_previous_companies_worked) #calcultate the Job hop for each emplyees from age different
@@ -143,8 +142,8 @@ emp_JHI%>%
   ggplot(aes(status,jhi))+geom_boxplot() # box-plot to demonstrate the outliers and mean
 ```
 
-##Question: Any suggestion to improve a employee turnover?
-###Calulate the empolyee tenure. According to below box-plot, we can see the Q1 percentile of active is almost equal the Q3 percentile of Inactive employee. In inactive employee, only 50% work like a year in the company. However, active empolyees are working for a long time than inactive employee. As a result. we can assume that the inactive employee domain percentage is new employee. According that, we have to improve the Junior employees in their first year. 
+## Question: Any suggestion to improve a employee turnover?
+### Calulate the empolyee tenure. According to below box-plot, we can see the Q1 percentile of active is almost equal the Q3 percentile of Inactive employee. In inactive employee, only 50% work like a year in the company. However, active empolyees are working for a long time than inactive employee. As a result. we can assume that the inactive employee domain percentage is new employee. According that, we have to improve the Junior employees in their first year. 
 ```{r echo=FALSE}
 library(lubridate) 
 emp_tenure<- emp_JHI%>%
@@ -165,7 +164,7 @@ emp_tenure%>%
   ggplot(aes(level, compensation, fill=status))+geom_boxplot() # graph to compare the compensation within status 
 ```
 # Compa Ratio is estimation to evaluate the employee wage percentage to median pay.
-##Compa Ratio = Actual Compensation / Median Compensation 
+## Compa Ratio = Actual Compensation / Median Compensation 
 ```{r echo=FALSE}
 emp_ratio<- emp_tenure%>%
   group_by(level)%>%
@@ -183,7 +182,7 @@ emp_final%>%
 
 # Unstanding information value : measure of predictive power of independent variable to accurately predict the dependent variable
 ## Information value = sima(% of non-events-% of events))* log( % of non-events/% of events)
-##information value : less than 0.15 meaning predictive power is poor, if 0.15 < IV < 0.4 id moderate, else greater than 0.4 meaning strong.
+## information value : less than 0.15 meaning predictive power is poor, if 0.15 < IV < 0.4 id moderate, else greater than 0.4 meaning strong.
 ```{r echo=FALSE}
 library(Information)
 IV <- create_infotables(data = emp_final, y = "turnover") 
@@ -253,7 +252,7 @@ test%>%
   count(status)%>%
   mutate(prop=n/sum(n)) # calculate the proportion in test for status
 ```
-##Variance Inflation Factor
+## Variance Inflation Factor
 ```{r}
 library(car)
 vif(logistic_mgr1) #check a multicollinearity, the vif for each variables is greater than 1 but less than 2. they are showing the indepent variables moderately correlated
@@ -294,9 +293,9 @@ precision <- diag/colsums;precision # the model's precision to active 96% and in
 accuracy <- sum(diag) / n ; accuracy # the model's accuracy is 0.88
 precision <- diag/colsums;precision # the model's precision to active is 0.97 and inactive 0.53
 ```
-##Question: After we analysis the result at above, what is next step?
+## Question: After we analysis the result at above, what is next step?
 ### when we know the accuracy and precision to our analysis, we have to provide the feeback and improve our strategy.
-##create retension strategy
+### create retension strategy
 ```{r echo=FALSE}
 library(tidypredict)
 emp_risk<- emp_final %>%
@@ -304,7 +303,7 @@ emp_risk<- emp_final %>%
   tidypredict_to_column(logistic_mgr1) # calculate probability of turnover and add predictions using the mul_log model
 ```
 
-###analysis the probability of employee turnover.
+### analysis the probability of employee turnover.
 ```{r echo=FALSE}
 emp_risk %>%
   select(emp_id , fit)%>%
@@ -323,8 +322,8 @@ emp_risk_bucket%>%
 ```
 ## Provide a plan to improve employee turnover.
 ### The histogram table shows normal distribution.
-##ROI: retun on investment
-###ROI = Program Benifits / Program Cost
+## ROI: retun on investment
+### ROI = Program Benifits / Program Cost
 ```{r echo=FALSE}
 emp_final%>%
   ggplot(aes(percent_hike))+geom_histogram(binwidth = 3) #plot histogram of percent hike
