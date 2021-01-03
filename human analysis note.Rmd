@@ -225,7 +225,7 @@ logistic_mgr1<-glm(turnover~emp_age+percent_hike+distance_from_home+total_depend
                    data=org)
 summary(logistic_mgr1)
 ```
-## 79% Training data and 30% Test data
+## 70% Training data and 30% Test data
 ### split the data 70% into train and 30% into test. we got 1367 observations in training data
 ```{r echo=FALSE}
 library(ISLR)
